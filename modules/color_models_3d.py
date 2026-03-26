@@ -170,14 +170,26 @@ def render() -> None:
 
     t1, t2 = st.tabs(["RGB Cube", "HSV 3D Model"])
 
+    plotly_config = {
+        # Let page scroll naturally when mouse wheel is used over the plot.
+        "scrollZoom": False,
+        # Keep keyboard shortcuts available when figure has focus (+ / - zoom, etc.).
+        "displayModeBar": True,
+    }
+
     with t1:
-        st.plotly_chart(_rgb_cube_figure(rgb_step, (sel_r, sel_g, sel_b)), use_container_width=True)
+        st.plotly_chart(
+            _rgb_cube_figure(rgb_step, (sel_r, sel_g, sel_b)),
+            use_container_width=True,
+            config=plotly_config,
+        )
         st.caption("Each point is a sampled RGB color in 3D space. Black point marks selected color.")
 
     with t2:
         st.plotly_chart(
             _hsv_cylinder_figure(h_step, s_steps, v_steps, (h_deg, s_pct, v_pct)),
             use_container_width=True,
+            config=plotly_config,
         )
         rgb_from_hsv = hsv_deg_to_rgb(h_deg, s_pct, v_pct)
         st.caption(
