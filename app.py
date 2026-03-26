@@ -4,9 +4,9 @@ import streamlit as st
 
 from modules import additive_subtractive, color_models_3d, converter, hsv_explorer
 
-st.set_page_config(page_title="Color Theory Lab", page_icon="🎨", layout="wide")
+st.set_page_config(page_title="Shane's Color Theory Lab", page_icon="🎨", layout="wide")
 
-st.title("🎨 Color Theory Lab")
+st.title("🎨 Shane's Color Theory Lab")
 st.markdown(
     """
 A classroom-friendly Streamlit app for learning color science with interactive demos.
@@ -15,6 +15,7 @@ Use the tabs below to explore:
 - **Additive vs Subtractive mixing**
 - **HSB/HSV decomposition**
 - **Color format conversion**
+- **3D color models**
 """
 )
 
