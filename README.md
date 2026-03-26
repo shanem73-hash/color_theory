@@ -40,6 +40,12 @@ Great for helping students understand that one color can be represented in multi
 - Adjustable sampling density for performance/detail tradeoffs
 - Improved usability for classroom navigation (wheel-scroll page behavior)
 
+### 5) Quiz Mode (v3)
+- Predict-the-result classroom questions
+- Multiple-choice flow with immediate feedback
+- Assignment lengths (5, 10, 15 questions)
+- Live score tracking and completion summary
+
 ## Tech stack
 
 - **Python**
@@ -66,7 +72,7 @@ streamlit run app.py
 
 ## Roadmap
 
-- Quiz mode (predict-and-reveal with scoring)
+- Exportable quiz results for classroom grading
 - Gamut clipping and device difference demos
 - Optional CIELAB/perceptual distance activities
 
