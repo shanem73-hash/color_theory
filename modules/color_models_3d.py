@@ -54,9 +54,10 @@ def _rgb_cube_figure(step: int, selected_rgb: tuple[int, int, int]) -> go.Figure
             xaxis=dict(range=[0, 255]),
             yaxis=dict(range=[0, 255]),
             zaxis=dict(range=[0, 255]),
+            aspectmode="cube",
         ),
-        margin=dict(l=0, r=0, b=0, t=20),
-        height=560,
+        margin=dict(l=0, r=0, b=20, t=40),
+        height=900,
         legend=dict(orientation="h"),
     )
     return fig
@@ -125,9 +126,10 @@ def _hsv_cylinder_figure(h_step: int, s_steps: int, v_steps: int, selected_hsv: 
             xaxis=dict(range=[-1, 1]),
             yaxis=dict(range=[-1, 1]),
             zaxis=dict(range=[0, 1]),
+            aspectmode="cube",
         ),
-        margin=dict(l=0, r=0, b=0, t=20),
-        height=560,
+        margin=dict(l=0, r=0, b=20, t=40),
+        height=900,
         legend=dict(orientation="h"),
     )
     return fig
