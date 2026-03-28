@@ -59,6 +59,7 @@ Includes an **equation explainer** with RGB↔HSV, RGB↔HSL, and RGB↔CMYK ref
 - Intro to perceptual distance ideas (ΔE intuition)
 - **2D Lab a*b* slice visualization** (fixed lightness)
 - **3D CIELAB/OKLab space visualization** with selectable model and density
+- Demo card: **equal RGB numeric move vs matched perceptual move (ΔE)**
 
 ## Tech stack
 

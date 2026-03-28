@@ -245,6 +245,10 @@ def _perceptual_space_3d_figure(base_rgb: tuple[int, int, int], mode: str, step:
     return fig
 
 
+def _delta_e76(lab1: tuple[float, float, float], lab2: tuple[float, float, float]) -> float:
+    return math.sqrt((lab1[0] - lab2[0]) ** 2 + (lab1[1] - lab2[1]) ** 2 + (lab1[2] - lab2[2]) ** 2)
+
+
 def render() -> None:
     st.subheader("CIELAB + OKLab (Modern Perceptual Models)")
     st.caption("These models are designed so numeric distance better matches human perceived color difference.")
@@ -311,6 +315,37 @@ OKLab is newer and often smoother for gradients/UI manipulation.
     st.markdown("### Distance intuition")
     st.write(f"Approx ΔE*ab (Lab Euclidean): **{de_lab:.2f}**")
     st.write(f"Scaled OKLab distance (for classroom intuition): **{de_ok:.2f}**")
+
+    st.markdown("### Demo: equal numeric RGB move vs perceptual move")
+    st.caption("Same numeric RGB change does not guarantee same visual change. Compare with a matched perceptual-space move.")
+
+    dcol1, dcol2, dcol3 = st.columns(3)
+    with dcol1:
+        rgb_step = st.slider("RGB demo step (+R)", 5, 80, 30, 1)
+    with dcol2:
+        target_de = st.slider("Target perceptual ΔE (Lab)", 3.0, 40.0, 12.0, 0.5)
+    with dcol3:
+        st.markdown(" ")
+
+    rgb_demo = (min(255, base_rgb[0] + rgb_step), base_rgb[1], base_rgb[2])
+    base_lab = rgb_to_lab(base_rgb)
+    rgb_demo_lab = rgb_to_lab(rgb_demo)
+    rgb_demo_de = _delta_e76(base_lab, rgb_demo_lab)
+
+    # Match perceptual move in Lab by shifting along +a* direction
+    lab_match = (base_lab[0], base_lab[1] + target_de, base_lab[2])
+    lab_demo_rgb = lab_to_rgb(lab_match)
+    lab_demo_de = _delta_e76(base_lab, rgb_to_lab(lab_demo_rgb))
+
+    s1, s2, s3 = st.columns(3)
+    with s1:
+        _swatch("Base", base_rgb)
+    with s2:
+        _swatch(f"RGB move (+R {rgb_step})", rgb_demo)
+        st.caption(f"Observed Lab ΔE*ab ≈ **{rgb_demo_de:.2f}**")
+    with s3:
+        _swatch("Perceptual move (Lab target)", lab_demo_rgb)
+        st.caption(f"Observed Lab ΔE*ab ≈ **{lab_demo_de:.2f}** (target {target_de:.1f})")
 
     st.markdown("### 2D explanation: Lab a*b* plane")
     st.caption("This slice fixes lightness (L*). Moving left/right changes green↔red; moving up/down changes blue↔yellow.")
