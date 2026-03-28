@@ -9,7 +9,7 @@ import streamlit as st
 from modules.color_math import hsv_deg_to_rgb, rgb_to_hex
 
 
-def _rgb_cube_figure(step: int, selected_rgb: tuple[int, int, int]) -> go.Figure:
+def rgb_cube_figure(step: int, selected_rgb: tuple[int, int, int]) -> go.Figure:
     vals = np.arange(0, 256, step)
     rr, gg, bb = np.meshgrid(vals, vals, vals)
     r = rr.flatten()
@@ -63,7 +63,7 @@ def _rgb_cube_figure(step: int, selected_rgb: tuple[int, int, int]) -> go.Figure
     return fig
 
 
-def _hsv_cylinder_figure(h_step: int, s_steps: int, v_steps: int, selected_hsv: tuple[int, int, int]) -> go.Figure:
+def hsv_cylinder_figure(h_step: int, s_steps: int, v_steps: int, selected_hsv: tuple[int, int, int]) -> go.Figure:
     h_vals = np.arange(0, 360, h_step)
     s_vals = np.linspace(0.15, 1.0, s_steps)
     v_vals = np.linspace(0.2, 1.0, v_steps)
@@ -179,7 +179,7 @@ def render() -> None:
 
     with t1:
         st.plotly_chart(
-            _rgb_cube_figure(rgb_step, (sel_r, sel_g, sel_b)),
+            rgb_cube_figure(rgb_step, (sel_r, sel_g, sel_b)),
             use_container_width=True,
             config=plotly_config,
         )
@@ -187,7 +187,7 @@ def render() -> None:
 
     with t2:
         st.plotly_chart(
-            _hsv_cylinder_figure(h_step, s_steps, v_steps, (h_deg, s_pct, v_pct)),
+            hsv_cylinder_figure(h_step, s_steps, v_steps, (h_deg, s_pct, v_pct)),
             use_container_width=True,
             config=plotly_config,
         )

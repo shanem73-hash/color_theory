@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from modules import color_models_3d
 from modules.color_math import hsv_deg_to_rgb, rgb_to_hex
 
 
@@ -49,6 +50,27 @@ def render() -> None:
     with p3:
         val_view = hsv_deg_to_rgb(h, 100, v)
         _swatch("Brightness effect", val_view, "S fixed at 100")
+
+    st.markdown("### HSV 3D Model (moved from 3D Models tab)")
+    hsv_density = st.select_slider(
+        "HSV 3D point density",
+        options=["Low", "Medium", "High"],
+        value="Medium",
+        key="hsv3d_density_explorer",
+    )
+    if hsv_density == "Low":
+        h_step, s_steps, v_steps = 24, 6, 4
+    elif hsv_density == "High":
+        h_step, s_steps, v_steps = 12, 10, 7
+    else:
+        h_step, s_steps, v_steps = 18, 8, 5
+
+    st.plotly_chart(
+        color_models_3d.hsv_cylinder_figure(h_step, s_steps, v_steps, (h, s, v)),
+        use_container_width=True,
+        config={"scrollZoom": False, "displayModeBar": True},
+    )
+    st.caption("Current HSV selection is marked in the 3D HSV model.")
 
     if lock_mode != "Free":
         st.success(

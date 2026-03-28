@@ -571,6 +571,9 @@ OKLab is newer and often smoother for gradients/UI manipulation.
         max(0, min(255, base_rgb[1] + d_g)),
         max(0, min(255, base_rgb[2] + d_b)),
     )
+    rgb_euclidean = math.sqrt(
+        (rgb_demo[0] - base_rgb[0]) ** 2 + (rgb_demo[1] - base_rgb[1]) ** 2 + (rgb_demo[2] - base_rgb[2]) ** 2
+    )
     base_lab = rgb_to_lab(base_rgb)
     rgb_demo_lab = rgb_to_lab(rgb_demo)
     rgb_demo_de = _delta_e76(base_lab, rgb_demo_lab)
@@ -604,6 +607,7 @@ OKLab is newer and often smoother for gradients/UI manipulation.
         _swatch("Base", base_rgb)
     with s2:
         _swatch(f"RGB move ({d_r:+d},{d_g:+d},{d_b:+d})", rgb_demo)
+        st.caption(f"RGB Euclidean distance ≈ **{rgb_euclidean:.2f}**")
         st.caption(f"Observed Lab ΔE*ab ≈ **{rgb_demo_de:.2f}**")
     with s3:
         _swatch("One perceptual move example", lab_demo_rgb)

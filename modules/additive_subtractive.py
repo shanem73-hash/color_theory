@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from modules import color_models_3d
 from modules.color_math import cmy_to_rgb, rgb_to_hex
 
 
@@ -85,6 +86,22 @@ def render() -> None:
         y = st.slider("Y (%)", 0, 100, key="cmy_y")
         subtractive_rgb = cmy_to_rgb(c, m, y)
         _swatch("Pigment Result", subtractive_rgb, "Starts from white paper; pigments subtract light.")
+
+    st.markdown("### 3D RGB Space (moved from 3D Models tab)")
+    rgb_density = st.select_slider(
+        "RGB 3D point density",
+        options=["Low", "Medium", "High"],
+        value="Medium",
+        key="rgb3d_density_additive",
+    )
+    rgb_step = 64 if rgb_density == "Low" else 32 if rgb_density == "High" else 48
+
+    st.plotly_chart(
+        color_models_3d.rgb_cube_figure(rgb_step, additive_rgb),
+        use_container_width=True,
+        config={"scrollZoom": False, "displayModeBar": True},
+    )
+    st.caption("Current additive RGB selection is marked in the RGB cube.")
 
     st.info(
         "Teaching tip: Ask students to predict the color before moving sliders. "

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from modules import additive_subtractive, color_models_3d, concepts, converter, hsv_explorer, perceptual_models, quiz_mode
+from modules import additive_subtractive, concepts, converter, hsv_explorer, perceptual_models, quiz_mode
 
 st.set_page_config(page_title="Shane's Color Theory Lab", page_icon="🎨", layout="wide")
 
@@ -15,7 +15,7 @@ Use the tabs below to explore:
 - **Additive vs Subtractive mixing**
 - **HSB/HSV decomposition**
 - **Color format conversion**
-- **3D color models**
+- **3D RGB in Additive/Subtractive + 3D HSV in HSV Explorer**
 - **Quiz mode for assignments**
 - **Concepts (history + model notes)**
 - **CIELAB / OKLab perceptual models**
@@ -23,12 +23,11 @@ Use the tabs below to explore:
 )
 
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
     [
         "Additive vs Subtractive",
         "HSB / HSV Explorer",
         "Converter",
-        "3D Models",
         "Quiz Mode",
         "Concepts",
         "CIELAB / OKLab",
@@ -45,13 +44,10 @@ with tab3:
     converter.render()
 
 with tab4:
-    color_models_3d.render()
-
-with tab5:
     quiz_mode.render()
 
-with tab6:
+with tab5:
     concepts.render()
 
-with tab7:
+with tab6:
     perceptual_models.render()

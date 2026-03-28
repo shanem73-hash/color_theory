@@ -35,9 +35,9 @@ Convert between:
 Great for helping students understand that one color can be represented in multiple formats.
 Includes an **equation explainer** with RGB↔HSV, RGB↔HSL, and RGB↔CMYK reference formulas plus a worked example.
 
-### 4) 3D Color Models
-- Interactive **RGB cube** visualization
-- Interactive **HSV 3D model** visualization
+### 4) Embedded 3D Learning Views
+- **RGB cube** is now embedded in **Additive vs Subtractive** tab
+- **HSV 3D model** is now embedded in **HSB / HSV Explorer** tab
 - Adjustable sampling density for performance/detail tradeoffs
 - Improved usability for classroom navigation (wheel-scroll page behavior)
 
