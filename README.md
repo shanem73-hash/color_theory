@@ -57,6 +57,8 @@ Includes an **equation explainer** with RGB↔HSV, RGB↔HSL, and RGB↔CMYK ref
 - Apply controlled deltas in Lab and OKLab spaces
 - Compare resulting colors side-by-side with the original
 - Intro to perceptual distance ideas (ΔE intuition)
+- **2D Lab a*b* slice visualization** (fixed lightness)
+- **3D CIELAB/OKLab space visualization** with selectable model and density
 
 ## Tech stack
 
