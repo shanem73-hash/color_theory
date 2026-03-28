@@ -322,15 +322,29 @@ OKLab is newer and often smoother for gradients/UI manipulation.
     dcol1, dcol2, dcol3 = st.columns(3)
     with dcol1:
         rgb_step = st.slider("RGB demo step (+R)", 5, 80, 30, 1)
-    with dcol2:
-        target_de = st.slider("Target perceptual ΔE (Lab)", 3.0, 40.0, 12.0, 0.5)
-    with dcol3:
-        st.markdown(" ")
 
     rgb_demo = (min(255, base_rgb[0] + rgb_step), base_rgb[1], base_rgb[2])
     base_lab = rgb_to_lab(base_rgb)
     rgb_demo_lab = rgb_to_lab(rgb_demo)
     rgb_demo_de = _delta_e76(base_lab, rgb_demo_lab)
+
+    if "target_de_lab_demo" not in st.session_state:
+        st.session_state.target_de_lab_demo = 12.0
+
+    with dcol2:
+        target_de = st.slider(
+            "Target perceptual ΔE (Lab)",
+            3.0,
+            40.0,
+            float(st.session_state.target_de_lab_demo),
+            0.5,
+            key="target_de_lab_demo",
+        )
+    with dcol3:
+        st.markdown(" ")
+        if st.button("Match RGB move ΔE automatically"):
+            st.session_state.target_de_lab_demo = round(rgb_demo_de * 2) / 2
+            st.rerun()
 
     # Match perceptual move in Lab by shifting along +a* direction
     lab_match = (base_lab[0], base_lab[1] + target_de, base_lab[2])
