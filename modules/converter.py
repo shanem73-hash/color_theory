@@ -115,3 +115,44 @@ def render() -> None:
         "Note: CMYK conversion here is educational and approximate. Real print workflows depend on ICC/device profiles."
     )
     st.caption(f"Current HEX: {rgb_to_hex(rgb)}")
+
+    with st.expander("Explain conversion equations (classroom reference)"):
+        st.markdown(
+            """
+### RGB → HSV (normalized RGB in [0,1])
+Let `max = max(r,g,b)`, `min = min(r,g,b)`, `Δ = max-min`.
+- **V** = `max`
+- **S** = `0 if max=0 else Δ/max`
+- **H** depends on which channel is max:
+  - if max=r: `60 * ((g-b)/Δ mod 6)`
+  - if max=g: `60 * (((b-r)/Δ) + 2)`
+  - if max=b: `60 * (((r-g)/Δ) + 4)`
+
+### RGB → HSL
+- **L** = `(max + min)/2`
+- **S** = `0 if Δ=0 else Δ / (1 - |2L - 1|)`
+- Hue uses the same piecewise form as HSV.
+
+### RGB ↔ CMYK (educational approximation)
+With normalized RGB:
+- `K = 1 - max(r,g,b)`
+- `C = (1-r-K)/(1-K)`, `M = (1-g-K)/(1-K)`, `Y = (1-b-K)/(1-K)`
+If `K=1`, then `C=M=Y=0`.
+
+Inverse:
+- `R = 255*(1-C)*(1-K)`
+- `G = 255*(1-M)*(1-K)`
+- `B = 255*(1-Y)*(1-K)`
+"""
+        )
+
+        hsv = data["hsv"]
+        hsl = data["hsl"]
+        cmyk = data["cmyk"]
+        st.markdown("### Worked example (current color)")
+        st.code(
+            f"RGB {data['rgb']} -> HEX {data['hex']}\n"
+            f"HSV ({hsv[0]:.1f}°, {hsv[1]:.1f}%, {hsv[2]:.1f}%)\n"
+            f"HSL ({hsl[0]:.1f}°, {hsl[1]:.1f}%, {hsl[2]:.1f}%)\n"
+            f"CMYK ({cmyk[0]:.1f}%, {cmyk[1]:.1f}%, {cmyk[2]:.1f}%, {cmyk[3]:.1f}%)"
+        )

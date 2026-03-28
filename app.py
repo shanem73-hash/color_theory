@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from modules import additive_subtractive, color_models_3d, converter, hsv_explorer, quiz_mode
+from modules import additive_subtractive, color_models_3d, concepts, converter, hsv_explorer, quiz_mode
 
 st.set_page_config(page_title="Shane's Color Theory Lab", page_icon="🎨", layout="wide")
 
@@ -17,12 +17,20 @@ Use the tabs below to explore:
 - **Color format conversion**
 - **3D color models**
 - **Quiz mode for assignments**
+- **Concepts (history + model notes)**
 """
 )
 
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    ["Additive vs Subtractive", "HSB / HSV Explorer", "Converter", "3D Models", "Quiz Mode"]
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+    [
+        "Additive vs Subtractive",
+        "HSB / HSV Explorer",
+        "Converter",
+        "3D Models",
+        "Quiz Mode",
+        "Concepts",
+    ]
 )
 
 with tab1:
@@ -39,3 +47,6 @@ with tab4:
 
 with tab5:
     quiz_mode.render()
+
+with tab6:
+    concepts.render()

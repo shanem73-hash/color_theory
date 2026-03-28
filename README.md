@@ -33,6 +33,7 @@ Convert between:
 - CMYK (educational approximation)
 
 Great for helping students understand that one color can be represented in multiple formats.
+Includes an **equation explainer** with RGB↔HSV, RGB↔HSL, and RGB↔CMYK reference formulas plus a worked example.
 
 ### 4) 3D Color Models
 - Interactive **RGB cube** visualization
@@ -45,6 +46,11 @@ Great for helping students understand that one color can be represented in multi
 - Multiple-choice flow with immediate feedback
 - Assignment lengths (5, 10, 15 questions)
 - Live score tracking and completion summary
+
+### 6) Concepts Tab (v4)
+- Short color theory history timeline
+- Core model intuition notes (RGB/CMYK/HSV/HSL)
+- Teaching-oriented explanation blocks
 
 ## Tech stack
 
@@ -75,6 +81,7 @@ streamlit run app.py
 - Exportable quiz results for classroom grading
 - Gamut clipping and device difference demos
 - Optional CIELAB/perceptual distance activities
+- Deeper historical module with references and primary sources
 
 ## Repository
 
