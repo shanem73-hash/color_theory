@@ -28,7 +28,6 @@ Use the tabs below in teaching order:
 4. **CIELAB / OKLab**
 5. **Converter**
 6. **Quiz Mode**
-7. **Auto Lesson**
 """
 )
 
@@ -65,3 +64,4 @@ with tab6:
 
 with tab7:
     auto_lesson.render()
+der()
