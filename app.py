@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from modules import additive_subtractive, concepts, converter, hsv_explorer, perceptual_models, quiz_mode
+from modules import additive_subtractive, auto_lesson, concepts, converter, hsv_explorer, perceptual_models, quiz_mode
 
 st.set_page_config(page_title="Shane's Color Theory Lab", page_icon="🎨", layout="wide")
 
@@ -28,11 +28,12 @@ Use the tabs below in teaching order:
 4. **CIELAB / OKLab**
 5. **Converter**
 6. **Quiz Mode**
+7. **Auto Lesson**
 """
 )
 
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(
     [
         "Concepts",
         "Additive vs Subtractive",
@@ -40,6 +41,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
         "CIELAB / OKLab",
         "Converter",
         "Quiz Mode",
+        "Auto Lesson",
     ]
 )
 
@@ -60,3 +62,6 @@ with tab5:
 
 with tab6:
     quiz_mode.render()
+
+with tab7:
+    auto_lesson.render()

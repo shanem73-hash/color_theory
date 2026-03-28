@@ -54,6 +54,12 @@ Includes equation explainers for RGB↔HSV, RGB↔HSL, RGB↔CMYK, and RGB→CIE
 - Live score tracking and completion summary
 - Student name input + **CSV export** for grading records
 
+### 7) Auto Lesson
+- Automated 3D teaching scenes (RGB, HSV, CIELAB)
+- Start/Pause/Reset controls
+- Synchronized on-screen instruction captions
+- Useful for live classroom presentation mode
+
 ## Tech stack
 
 - **Python**
