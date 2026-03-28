@@ -3,7 +3,7 @@ from __future__ import annotations
 import streamlit as st
 
 from modules import color_models_3d
-from modules.color_math import cmy_to_rgb, rgb_to_hex
+from modules.color_math import cmy_to_rgb, hex_to_rgb, rgb_to_hex
 
 
 def _swatch(label: str, rgb: tuple[int, int, int], subtitle: str) -> None:
@@ -103,7 +103,48 @@ def render() -> None:
     )
     st.caption("Current additive RGB selection is marked in the RGB cube.")
 
+    st.markdown("### New Demo: Overlay Two Color Filters")
+    st.caption(
+        "Simulate stacking transparent filters in front of a light source. "
+        "Each filter transmits some portion of R/G/B, so stacking multiplies transmission."
+    )
+
+    f1, f2, f3 = st.columns(3)
+    with f1:
+        light_hex = st.color_picker("Input light color", value="#FFFFFF", key="filter_light")
+    with f2:
+        filter1_hex = st.color_picker("Filter 1", value="#FF0000", key="filter_1")
+    with f3:
+        filter2_hex = st.color_picker("Filter 2", value="#00FFFF", key="filter_2")
+
+    light_rgb = hex_to_rgb(light_hex)
+    filter1_rgb = hex_to_rgb(filter1_hex)
+    filter2_rgb = hex_to_rgb(filter2_hex)
+
+    final_rgb = (
+        round((light_rgb[0] / 255) * (filter1_rgb[0] / 255) * (filter2_rgb[0] / 255) * 255),
+        round((light_rgb[1] / 255) * (filter1_rgb[1] / 255) * (filter2_rgb[1] / 255) * 255),
+        round((light_rgb[2] / 255) * (filter1_rgb[2] / 255) * (filter2_rgb[2] / 255) * 255),
+    )
+
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        _swatch("Input light", light_rgb, "Light before filters")
+    with c2:
+        _swatch("Filter 1", filter1_rgb, "Transmission profile")
+    with c3:
+        _swatch("Filter 2", filter2_rgb, "Transmission profile")
+    with c4:
+        _swatch("Final transmitted color", final_rgb, "After stacking Filter 1 + Filter 2")
+
+    st.code(
+        "Final = Light × Filter1 × Filter2 (per channel, normalized)\n"
+        f"R: {light_rgb[0]} × {filter1_rgb[0]} × {filter2_rgb[0]} / 255² = {final_rgb[0]}\n"
+        f"G: {light_rgb[1]} × {filter1_rgb[1]} × {filter2_rgb[1]} / 255² = {final_rgb[1]}\n"
+        f"B: {light_rgb[2]} × {filter1_rgb[2]} × {filter2_rgb[2]} / 255² = {final_rgb[2]}"
+    )
+
     st.info(
-        "Teaching tip: Ask students to predict the color before moving sliders. "
-        "Then compare prediction vs result."
+        "Teaching tip: Ask students to guess the result for Red + Cyan filters on white light. "
+        "Then show why overlapping filters usually gets darker, not brighter."
     )
