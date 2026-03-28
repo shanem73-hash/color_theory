@@ -52,6 +52,12 @@ Includes an **equation explainer** with RGB↔HSV, RGB↔HSL, and RGB↔CMYK ref
 - Core model intuition notes (RGB/CMYK/HSV/HSL)
 - Teaching-oriented explanation blocks
 
+### 7) CIELAB / OKLab Tab (v5)
+- Interactive perceptual color model demo
+- Apply controlled deltas in Lab and OKLab spaces
+- Compare resulting colors side-by-side with the original
+- Intro to perceptual distance ideas (ΔE intuition)
+
 ## Tech stack
 
 - **Python**
@@ -80,7 +86,8 @@ streamlit run app.py
 
 - Exportable quiz results for classroom grading
 - Gamut clipping and device difference demos
-- Optional CIELAB/perceptual distance activities
+- Exportable snapshots/worksheets for Lab/OKLab exercises
+- Optional CIEDE2000 comparison activity
 - Deeper historical module with references and primary sources
 
 ## Repository
