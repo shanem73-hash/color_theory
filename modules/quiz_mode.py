@@ -79,6 +79,40 @@ QUIZ_BANK: List[Dict[str, object]] = [
         "answer": "Printing",
         "explanation": "CMYK represents ink channels used in many print processes.",
     },
+    {
+        "prompt": "In CIELAB, which axis corresponds to green↔red variation?",
+        "choices": ["a*", "b*", "L*", "H"],
+        "answer": "a*",
+        "explanation": "In CIELAB, a* is the green (negative) to red (positive) axis.",
+    },
+    {
+        "prompt": "In CIELAB, what does L* primarily represent?",
+        "choices": ["Lightness", "Saturation", "Hue", "Ink density"],
+        "answer": "Lightness",
+        "explanation": "L* is perceptual lightness from dark to light.",
+    },
+    {
+        "prompt": "Why are CIELAB/OKLab often used in color-difference tasks?",
+        "choices": [
+            "Distances better align with perceived differences",
+            "They are native printer ink formats",
+            "They use fewer channels than RGB",
+            "They avoid gamma entirely in all workflows",
+        ],
+        "answer": "Distances better align with perceived differences",
+        "explanation": "Perceptual spaces are designed so numeric distance is closer to visual difference.",
+    },
+    {
+        "prompt": "OKLab is generally considered...",
+        "choices": [
+            "A newer perceptual model useful for gradients/UI work",
+            "An old subtractive print model",
+            "A replacement for HEX in CSS syntax",
+            "A camera sensor color filter",
+        ],
+        "answer": "A newer perceptual model useful for gradients/UI work",
+        "explanation": "OKLab is modern and often smoother than older models for interpolation and UI color operations.",
+    },
 ]
 
 

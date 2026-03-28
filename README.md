@@ -11,57 +11,44 @@ This project is built for classroom teaching, self-study, and live demos. Studen
 - Practice **color format conversion** across common digital/print representations
 - Visualize color spaces with **interactive 3D models**
 
-## Features
+## Features (teaching order)
 
-### 1) Additive vs Subtractive Mixing
+### 1) Concepts
+- Visual **history timeline** diagram
+- **Concept map** diagram showing relationships across RGB/CMYK/HSV/HEX/CIELAB/OKLab
+- Foundation notes before hands-on sections
+
+### 2) Additive vs Subtractive Mixing
 - RGB light mixing demo (additive)
 - CMY pigment-style mixing demo (subtractive)
 - Quick presets for common classroom examples
 - Side-by-side visual comparison with live swatches
+- Embedded RGB 3D cube
 
-### 2) HSB / HSV Explorer
+### 3) HSB / HSV Explorer
 - Interactive H, S, V controls
 - Channel decomposition views
-- Supports guided instruction on what each channel changes
+- Embedded HSV 3D model
 
-### 3) Color Converter
+### 4) CIELAB / OKLab
+- Interactive perceptual color model demo
+- Apply controlled deltas in Lab and OKLab spaces
+- **2D Lab a*b* slice + iso-ΔE circle**
+- **3D side-by-side RGB vs CIELAB/OKLab** with distance lines and transparent orange iso-spheres
+- Demo card: RGB move in all channels with RGB distance + perceptual distance
+
+### 5) Color Converter
 Convert between:
-- HEX
-- RGB
-- HSV
-- HSL
-- CMYK (educational approximation)
+- HEX, RGB, HSV, HSL, CMYK
+- **CIELAB and OKLab output values**
 
-Great for helping students understand that one color can be represented in multiple formats.
-Includes an **equation explainer** with RGB↔HSV, RGB↔HSL, and RGB↔CMYK reference formulas plus a worked example.
+Includes equation explainers for RGB↔HSV, RGB↔HSL, RGB↔CMYK, and RGB→CIELAB/OKLab pipeline notes.
 
-### 4) Embedded 3D Learning Views
-- **RGB cube** is now embedded in **Additive vs Subtractive** tab
-- **HSV 3D model** is now embedded in **HSB / HSV Explorer** tab
-- Adjustable sampling density for performance/detail tradeoffs
-- Improved usability for classroom navigation (wheel-scroll page behavior)
-
-### 5) Quiz Mode (v3)
-- Predict-the-result classroom questions
+### 6) Quiz Mode
+- Mixed classroom questions including CIELAB/OKLab concepts
 - Multiple-choice flow with immediate feedback
 - Assignment lengths (5, 10, 15 questions)
 - Live score tracking and completion summary
-
-### 6) Concepts Tab (v4)
-- Short color theory history timeline
-- Core model intuition notes (RGB/CMYK/HSV/HSL)
-- Teaching-oriented explanation blocks
-
-### 7) CIELAB / OKLab Tab (v5)
-- Interactive perceptual color model demo
-- Apply controlled deltas in Lab and OKLab spaces
-- Compare resulting colors side-by-side with the original
-- Intro to perceptual distance ideas (ΔE intuition)
-- **2D Lab a*b* slice visualization** (fixed lightness)
-- **3D CIELAB/OKLab space visualization** with selectable model and density
-- Demo card: **RGB move in R/G/B channels** with computed ΔE
-- **Iso-ΔE circle (2D)** and **iso-ΔE sphere (3D, transparent orange)** visual overlays
-- Side-by-side **RGB 3D vs CIELAB/OKLab 3D** distance comparison
 
 ## Tech stack
 
@@ -82,10 +69,12 @@ streamlit run app.py
 
 ## Teaching notes
 
+- Recommended flow: **Concepts → Add/Sub → HSV → CIELAB/OKLab → Converter → Quiz**.
 - Ask students to **predict** outcomes before moving sliders.
-- Use additive/subtractive presets as short formative checks.
+- Use additive/subtractive presets as quick formative checks.
 - In HSV mode, vary one parameter at a time to isolate effects.
-- Explain CMYK as an approximation in this app (real print output depends on device/ICC profiles).
+- Explain CMYK as an approximation (real print output depends on ICC/device profiles).
+- In CIELAB/OKLab, compare RGB distance vs perceptual distance to discuss why RGB is not uniform.
 
 ## Roadmap
 

@@ -4,6 +4,10 @@ import colorsys
 from typing import Dict, Tuple
 
 
+# D65 white point constants for CIELAB conversion
+_XN, _YN, _ZN = 0.95047, 1.00000, 1.08883
+
+
 def clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
 
@@ -85,14 +89,59 @@ def cmyk_to_rgb(c: float, m: float, y: float, k: float) -> Tuple[int, int, int]:
     return round(r), round(g), round(b)
 
 
+def _srgb_to_linear(c: float) -> float:
+    if c <= 0.04045:
+        return c / 12.92
+    return ((c + 0.055) / 1.055) ** 2.4
+
+
+def rgb_to_lab(rgb: Tuple[int, int, int]) -> Tuple[float, float, float]:
+    r, g, b = (_srgb_to_linear(rgb[0] / 255), _srgb_to_linear(rgb[1] / 255), _srgb_to_linear(rgb[2] / 255))
+
+    x = 0.4124564 * r + 0.3575761 * g + 0.1804375 * b
+    y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b
+    z = 0.0193339 * r + 0.1191920 * g + 0.9503041 * b
+
+    def f(t: float) -> float:
+        d = 6 / 29
+        if t > d**3:
+            return t ** (1 / 3)
+        return t / (3 * d * d) + 4 / 29
+
+    fx, fy, fz = f(x / _XN), f(y / _YN), f(z / _ZN)
+    l = 116 * fy - 16
+    a = 500 * (fx - fy)
+    b2 = 200 * (fy - fz)
+    return l, a, b2
+
+
+def rgb_to_oklab(rgb: Tuple[int, int, int]) -> Tuple[float, float, float]:
+    r, g, b = (_srgb_to_linear(rgb[0] / 255), _srgb_to_linear(rgb[1] / 255), _srgb_to_linear(rgb[2] / 255))
+
+    l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b
+    m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b
+    s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b
+
+    l_, m_, s_ = l ** (1 / 3), m ** (1 / 3), s ** (1 / 3)
+
+    L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_
+    a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_
+    b2 = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
+    return L, a, b2
+
+
 def converter_state_from_rgb(rgb: Tuple[int, int, int]) -> Dict[str, object]:
     h_hsv, s_hsv, v_hsv = rgb_to_hsv_deg(rgb)
     h_hsl, s_hsl, l_hsl = rgb_to_hsl_deg(rgb)
     c, m, y, k = rgb_to_cmyk(rgb)
+    lab = rgb_to_lab(rgb)
+    okl = rgb_to_oklab(rgb)
     return {
         "hex": rgb_to_hex(rgb),
         "rgb": rgb,
         "hsv": (h_hsv, s_hsv, v_hsv),
         "hsl": (h_hsl, s_hsl, l_hsl),
         "cmyk": (c, m, y, k),
+        "lab": lab,
+        "oklab": okl,
     }

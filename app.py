@@ -11,43 +11,42 @@ st.markdown(
     """
 A classroom-friendly Streamlit app for learning color science with interactive demos.
 
-Use the tabs below to explore:
-- **Additive vs Subtractive mixing**
-- **HSB/HSV decomposition**
-- **Color format conversion**
-- **3D RGB in Additive/Subtractive + 3D HSV in HSV Explorer**
-- **Quiz mode for assignments**
-- **Concepts (history + model notes)**
-- **CIELAB / OKLab perceptual models**
+Use the tabs below in teaching order:
+1. **Concepts (history + model map)**
+2. **Additive vs Subtractive**
+3. **HSB / HSV Explorer**
+4. **CIELAB / OKLab**
+5. **Converter**
+6. **Quiz Mode**
 """
 )
 
 
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
     [
+        "Concepts",
         "Additive vs Subtractive",
         "HSB / HSV Explorer",
+        "CIELAB / OKLab",
         "Converter",
         "Quiz Mode",
-        "Concepts",
-        "CIELAB / OKLab",
     ]
 )
 
 with tab1:
-    additive_subtractive.render()
-
-with tab2:
-    hsv_explorer.render()
-
-with tab3:
-    converter.render()
-
-with tab4:
-    quiz_mode.render()
-
-with tab5:
     concepts.render()
 
-with tab6:
+with tab2:
+    additive_subtractive.render()
+
+with tab3:
+    hsv_explorer.render()
+
+with tab4:
     perceptual_models.render()
+
+with tab5:
+    converter.render()
+
+with tab6:
+    quiz_mode.render()

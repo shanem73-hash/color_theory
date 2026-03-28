@@ -105,11 +105,15 @@ def render() -> None:
         st.code(f"RGB: {data['rgb']}")
         hsv = data["hsv"]
         st.code(f"HSV: ({hsv[0]:.1f}°, {hsv[1]:.1f}%, {hsv[2]:.1f}%)")
+        lab = data["lab"]
+        st.code(f"CIELAB: (L*={lab[0]:.2f}, a*={lab[1]:.2f}, b*={lab[2]:.2f})")
     with c2:
         hsl = data["hsl"]
         cmyk = data["cmyk"]
+        okl = data["oklab"]
         st.code(f"HSL: ({hsl[0]:.1f}°, {hsl[1]:.1f}%, {hsl[2]:.1f}%)")
         st.code(f"CMYK: ({cmyk[0]:.1f}%, {cmyk[1]:.1f}%, {cmyk[2]:.1f}%, {cmyk[3]:.1f}%)")
+        st.code(f"OKLab: (L={okl[0]:.4f}, a={okl[1]:.4f}, b={okl[2]:.4f})")
 
     st.caption(
         "Note: CMYK conversion here is educational and approximate. Real print workflows depend on ICC/device profiles."
@@ -143,16 +147,40 @@ Inverse:
 - `R = 255*(1-C)*(1-K)`
 - `G = 255*(1-M)*(1-K)`
 - `B = 255*(1-Y)*(1-K)`
+
+### RGB → CIELAB (pipeline)
+1. Convert sRGB to linear RGB (gamma removal).
+2. Linear RGB → XYZ (D65 matrix).
+3. XYZ → Lab using:
+   - `L* = 116 f(Y/Yn) - 16`
+   - `a* = 500 [f(X/Xn) - f(Y/Yn)]`
+   - `b* = 200 [f(Y/Yn) - f(Z/Zn)]`
+where `f(t)` is cubic-root with low-end linear segment.
+
+### RGB → OKLab (pipeline)
+1. Convert sRGB to linear RGB.
+2. Linear RGB → LMS (fixed transform).
+3. Cube-root LMS.
+4. LMS' → OKLab via linear transform:
+   - output `(L, a, b)` where `L` is perceptual lightness.
+
+**Interpretation:**
+- Lab/OKLab are perceptual spaces for color-difference reasoning.
+- RGB/HEX remain implementation spaces for displays.
 """
         )
 
         hsv = data["hsv"]
         hsl = data["hsl"]
         cmyk = data["cmyk"]
+        lab = data["lab"]
+        okl = data["oklab"]
         st.markdown("### Worked example (current color)")
         st.code(
             f"RGB {data['rgb']} -> HEX {data['hex']}\n"
             f"HSV ({hsv[0]:.1f}°, {hsv[1]:.1f}%, {hsv[2]:.1f}%)\n"
             f"HSL ({hsl[0]:.1f}°, {hsl[1]:.1f}%, {hsl[2]:.1f}%)\n"
-            f"CMYK ({cmyk[0]:.1f}%, {cmyk[1]:.1f}%, {cmyk[2]:.1f}%, {cmyk[3]:.1f}%)"
+            f"CMYK ({cmyk[0]:.1f}%, {cmyk[1]:.1f}%, {cmyk[2]:.1f}%, {cmyk[3]:.1f}%)\n"
+            f"CIELAB (L*={lab[0]:.2f}, a*={lab[1]:.2f}, b*={lab[2]:.2f})\n"
+            f"OKLab (L={okl[0]:.4f}, a={okl[1]:.4f}, b={okl[2]:.4f})"
         )
