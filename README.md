@@ -16,6 +16,7 @@ This project is built for classroom teaching, self-study, and live demos. Studen
 ### 1) Concepts
 - Visual **history timeline** diagram
 - **Concept map** diagram showing relationships across RGB/CMYK/HSV/HEX/CIELAB/OKLab
+- Guided 10-minute lesson flow buttons (step-by-step classroom script)
 - Foundation notes before hands-on sections
 
 ### 2) Additive vs Subtractive Mixing
@@ -36,19 +37,22 @@ This project is built for classroom teaching, self-study, and live demos. Studen
 - **2D Lab a*b* slice + iso-ΔE circle**
 - **3D side-by-side RGB vs CIELAB/OKLab** with distance lines and transparent orange iso-spheres
 - Demo card: RGB move in all channels with RGB distance + perceptual distance
+- **CIEDE2000 (ΔE00)** shown alongside ΔE76
+- **Gamut clipping check** (in-gamut vs clipped after perceptual edits)
 
 ### 5) Color Converter
 Convert between:
 - HEX, RGB, HSV, HSL, CMYK
 - **CIELAB and OKLab output values**
 
-Includes equation explainers for RGB↔HSV, RGB↔HSL, RGB↔CMYK, and RGB→CIELAB/OKLab pipeline notes.
+Includes equation explainers for RGB↔HSV, RGB↔HSL, RGB↔CMYK, and RGB→CIELAB/OKLab pipeline notes (Teacher mode).
 
 ### 6) Quiz Mode
 - Mixed classroom questions including CIELAB/OKLab concepts
 - Multiple-choice flow with immediate feedback
 - Assignment lengths (5, 10, 15 questions)
 - Live score tracking and completion summary
+- Student name input + **CSV export** for grading records
 
 ## Tech stack
 
@@ -70,6 +74,11 @@ streamlit run app.py
 ## Teaching notes
 
 - Recommended flow: **Concepts → Add/Sub → HSV → CIELAB/OKLab → Converter → Quiz**.
+- Use sidebar **Mode**:
+  - **Student**: cleaner interface
+  - **Teacher**: equations and derivation details
+- Use sidebar **Performance**:
+  - Fast / Balanced / Detail for 3D density defaults
 - Ask students to **predict** outcomes before moving sliders.
 - Use additive/subtractive presets as quick formative checks.
 - In HSV mode, vary one parameter at a time to isolate effects.

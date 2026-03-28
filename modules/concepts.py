@@ -89,6 +89,32 @@ def render() -> None:
     st.subheader("Concepts: Color Theory Foundations")
     st.caption("Use this first: historical context + conceptual diagrams before interactive experiments.")
 
+    if "lesson_step" not in st.session_state:
+        st.session_state.lesson_step = 1
+
+    st.markdown("### Guided lesson flow (10-minute classroom mode)")
+    b1, b2, b3, b4 = st.columns(4)
+    with b1:
+        if st.button("Step 1: Concepts"):
+            st.session_state.lesson_step = 1
+    with b2:
+        if st.button("Step 2: Add/Sub + HSV"):
+            st.session_state.lesson_step = 2
+    with b3:
+        if st.button("Step 3: Lab/OKLab"):
+            st.session_state.lesson_step = 3
+    with b4:
+        if st.button("Step 4: Converter + Quiz"):
+            st.session_state.lesson_step = 4
+
+    step_text = {
+        1: "Explain RGB vs CMYK and why multiple color models exist.",
+        2: "Run additive/subtractive presets, then show HSV channel effects and 3D HSV model.",
+        3: "Demonstrate perceptual distance using Lab/OKLab 2D/3D and ΔE.",
+        4: "Use converter for cross-format practice, then assign Quiz mode.",
+    }
+    st.success(f"Current guided step: **{st.session_state.lesson_step}** — {step_text[st.session_state.lesson_step]}")
+
     st.plotly_chart(_timeline_figure(), use_container_width=True, config={"scrollZoom": False})
 
     st.markdown("### Historical notes")

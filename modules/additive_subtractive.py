@@ -67,7 +67,19 @@ def render() -> None:
         elif p == "Subtractive: Heavy CMY mix ≈ dark":
             st.session_state.cmy_c, st.session_state.cmy_m, st.session_state.cmy_y = 85, 85, 85
 
-    st.selectbox("Quick preset", presets, key="quick_preset", on_change=apply_preset)
+    pcol1, pcol2 = st.columns([3, 1])
+    with pcol1:
+        st.selectbox("Quick preset", presets, key="quick_preset", on_change=apply_preset)
+    with pcol2:
+        st.markdown(" ")
+        if st.button("Reset tab", key="reset_addsub"):
+            st.session_state.rgb_r = 120
+            st.session_state.rgb_g = 120
+            st.session_state.rgb_b = 120
+            st.session_state.cmy_c = 40
+            st.session_state.cmy_m = 40
+            st.session_state.cmy_y = 40
+            st.rerun()
 
     left, right = st.columns(2)
 
@@ -88,10 +100,12 @@ def render() -> None:
         _swatch("Pigment Result", subtractive_rgb, "Starts from white paper; pigments subtract light.")
 
     st.markdown("### 3D RGB Space (moved from 3D Models tab)")
+    perf = st.session_state.get("perf_mode", "Balanced")
+    default_density = "Low" if perf == "Fast" else "High" if perf == "Detail" else "Medium"
     rgb_density = st.select_slider(
         "RGB 3D point density",
         options=["Low", "Medium", "High"],
-        value="Medium",
+        value=default_density,
         key="rgb3d_density_additive",
     )
     rgb_step = 64 if rgb_density == "Low" else 32 if rgb_density == "High" else 48

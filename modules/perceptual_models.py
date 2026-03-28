@@ -69,7 +69,7 @@ def rgb_to_lab(rgb: tuple[int, int, int]) -> tuple[float, float, float]:
     return l, a, b
 
 
-def lab_to_rgb(lab: tuple[float, float, float]) -> tuple[int, int, int]:
+def _lab_to_linear_rgb(lab: tuple[float, float, float]) -> tuple[float, float, float]:
     l, a, b = lab
     xn, yn, zn = 0.95047, 1.00000, 1.08883
 
@@ -86,7 +86,11 @@ def lab_to_rgb(lab: tuple[float, float, float]) -> tuple[int, int, int]:
     x = xn * finv(fx)
     y = yn * finv(fy)
     z = zn * finv(fz)
-    rgb_lin = _xyz_to_linear_rgb((x, y, z))
+    return _xyz_to_linear_rgb((x, y, z))
+
+
+def lab_to_rgb(lab: tuple[float, float, float]) -> tuple[int, int, int]:
+    rgb_lin = _lab_to_linear_rgb(lab)
     return _linear_to_rgb255(rgb_lin)
 
 
@@ -106,7 +110,7 @@ def rgb_to_oklab(rgb: tuple[int, int, int]) -> tuple[float, float, float]:
     return L, a, b
 
 
-def oklab_to_rgb(oklab: tuple[float, float, float]) -> tuple[int, int, int]:
+def _oklab_to_linear_rgb(oklab: tuple[float, float, float]) -> tuple[float, float, float]:
     L, a, b = oklab
 
     l_ = L + 0.3963377774 * a + 0.2158037573 * b
@@ -120,8 +124,11 @@ def oklab_to_rgb(oklab: tuple[float, float, float]) -> tuple[int, int, int]:
     r = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s
     g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s
     b2 = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s
+    return (r, g, b2)
 
-    return _linear_to_rgb255((r, g, b2))
+
+def oklab_to_rgb(oklab: tuple[float, float, float]) -> tuple[int, int, int]:
+    return _linear_to_rgb255(_oklab_to_linear_rgb(oklab))
 
 
 def _swatch(label: str, rgb: tuple[int, int, int]) -> None:
@@ -488,9 +495,80 @@ def _delta_e76(lab1: tuple[float, float, float], lab2: tuple[float, float, float
     return math.sqrt((lab1[0] - lab2[0]) ** 2 + (lab1[1] - lab2[1]) ** 2 + (lab1[2] - lab2[2]) ** 2)
 
 
+def _delta_e00(lab1: tuple[float, float, float], lab2: tuple[float, float, float]) -> float:
+    l1, a1, b1 = lab1
+    l2, a2, b2 = lab2
+
+    c1 = math.sqrt(a1 * a1 + b1 * b1)
+    c2 = math.sqrt(a2 * a2 + b2 * b2)
+    cbar = (c1 + c2) / 2
+    g = 0.5 * (1 - math.sqrt((cbar**7) / (cbar**7 + 25**7 + 1e-12)))
+
+    a1p = (1 + g) * a1
+    a2p = (1 + g) * a2
+    c1p = math.sqrt(a1p * a1p + b1 * b1)
+    c2p = math.sqrt(a2p * a2p + b2 * b2)
+
+    def hp(a: float, b: float) -> float:
+        if a == 0 and b == 0:
+            return 0
+        ang = math.degrees(math.atan2(b, a))
+        return ang + 360 if ang < 0 else ang
+
+    h1p = hp(a1p, b1)
+    h2p = hp(a2p, b2)
+
+    dl = l2 - l1
+    dc = c2p - c1p
+
+    dh = 0.0
+    if c1p * c2p != 0:
+        dh = h2p - h1p
+        if dh > 180:
+            dh -= 360
+        elif dh < -180:
+            dh += 360
+    d_h = 2 * math.sqrt(c1p * c2p) * math.sin(math.radians(dh / 2))
+
+    lbar = (l1 + l2) / 2
+    cpbar = (c1p + c2p) / 2
+
+    hbar = h1p + h2p
+    if c1p * c2p != 0:
+        if abs(h1p - h2p) > 180:
+            hbar = (h1p + h2p + 360) / 2 if (h1p + h2p) < 360 else (h1p + h2p - 360) / 2
+        else:
+            hbar = (h1p + h2p) / 2
+
+    t = (
+        1
+        - 0.17 * math.cos(math.radians(hbar - 30))
+        + 0.24 * math.cos(math.radians(2 * hbar))
+        + 0.32 * math.cos(math.radians(3 * hbar + 6))
+        - 0.20 * math.cos(math.radians(4 * hbar - 63))
+    )
+
+    sl = 1 + (0.015 * (lbar - 50) ** 2) / math.sqrt(20 + (lbar - 50) ** 2)
+    sc = 1 + 0.045 * cpbar
+    sh = 1 + 0.015 * cpbar * t
+
+    dtheta = 30 * math.exp(-(((hbar - 275) / 25) ** 2))
+    rc = 2 * math.sqrt((cpbar**7) / (cpbar**7 + 25**7 + 1e-12))
+    rt = -rc * math.sin(math.radians(2 * dtheta))
+
+    kl = kc = kh = 1
+    return math.sqrt(
+        (dl / (kl * sl)) ** 2
+        + (dc / (kc * sc)) ** 2
+        + (d_h / (kh * sh)) ** 2
+        + rt * (dc / (kc * sc)) * (d_h / (kh * sh))
+    )
+
+
 def render() -> None:
     st.subheader("CIELAB + OKLab (Modern Perceptual Models)")
     st.caption("These models are designed so numeric distance better matches human perceived color difference.")
+    mode = st.session_state.get("app_mode", "Student")
 
     base = st.color_picker("Pick a base color", value="#4FA3FF")
     base_rgb = tuple(int(base[i : i + 2], 16) for i in (1, 3, 5))
@@ -523,8 +601,20 @@ def render() -> None:
     with s3:
         _swatch("After OKLab change", okl_rgb)
 
+    st.markdown("### Gamut clipping check")
+    lab_lin = _lab_to_linear_rgb(lab2)
+    okl_lin = _oklab_to_linear_rgb(okl2)
+    lab_in_gamut = all(0.0 <= c <= 1.0 for c in lab_lin)
+    okl_in_gamut = all(0.0 <= c <= 1.0 for c in okl_lin)
+    g1, g2 = st.columns(2)
+    with g1:
+        st.write(f"CIELAB tweaked color in sRGB gamut: **{'Yes' if lab_in_gamut else 'No (clipped)'}**")
+    with g2:
+        st.write(f"OKLab tweaked color in sRGB gamut: **{'Yes' if okl_in_gamut else 'No (clipped)'}**")
+
     de_lab = math.sqrt(dL**2 + dA**2 + dB**2)
     de_ok = math.sqrt((dL_ok * 100) ** 2 + (dA_ok * 100) ** 2 + (dB_ok * 100) ** 2)
+    de00 = _delta_e00(lab, rgb_to_lab(lab_rgb))
 
     st.markdown("### What each axis means")
     e1, e2 = st.columns(2)
@@ -553,6 +643,7 @@ OKLab is newer and often smoother for gradients/UI manipulation.
 
     st.markdown("### Distance intuition")
     st.write(f"Approx ΔE*ab (Lab Euclidean): **{de_lab:.2f}**")
+    st.write(f"ΔE00 (CIEDE2000, more modern): **{de00:.2f}**")
     st.write(f"Scaled OKLab distance (for classroom intuition): **{de_ok:.2f}**")
 
     st.markdown("### Demo: RGB move in all channels vs perceptual distance")
@@ -633,7 +724,9 @@ OKLab is newer and often smoother for gradients/UI manipulation.
     with d1:
         space_mode = st.radio("Perceptual 3D model", ["CIELAB", "OKLab"], horizontal=True)
     with d2:
-        density = st.select_slider("3D point density", options=["Low", "Medium", "High"], value="Medium")
+        perf = st.session_state.get("perf_mode", "Balanced")
+        default_density = "Low" if perf == "Fast" else "High" if perf == "Detail" else "Medium"
+        density = st.select_slider("3D point density", options=["Low", "Medium", "High"], value=default_density)
 
     if density == "Low":
         step = 64
@@ -661,9 +754,10 @@ OKLab is newer and often smoother for gradients/UI manipulation.
         "To make the iso-distance shell look like a true sphere, this view forces equal axis span around the base point."
     )
 
-    with st.expander("Why CIELAB / OKLab matter"):
-        st.markdown(
-            """
+    if mode == "Teacher":
+        with st.expander("Why CIELAB / OKLab matter"):
+            st.markdown(
+                """
 - RGB is device-centric and not perceptually uniform.
 - CIELAB (1976) was designed so Euclidean distance is closer to perceived difference.
 - OKLab is a newer perceptual model that often behaves better for gradients and UI work.
@@ -675,4 +769,6 @@ OKLab is newer and often smoother for gradients/UI manipulation.
 3. In the 3D plot, show how lightness sits on a separate axis from chromatic directions.
 4. Compare equal numeric moves in RGB vs perceptual spaces.
 """
-        )
+            )
+    else:
+        st.caption("Tip: Teacher mode adds deeper derivation notes and instruction script.")

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import csv
+import io
 import random
+from datetime import datetime
 from typing import Dict, List
 
 import streamlit as st
@@ -131,6 +134,10 @@ def _init_state(total_questions: int) -> None:
         st.session_state.quiz_was_correct = None
     if "quiz_question" not in st.session_state:
         st.session_state.quiz_question = random.choice(QUIZ_BANK)
+    if "quiz_results" not in st.session_state:
+        st.session_state.quiz_results = []
+    if "quiz_student_name" not in st.session_state:
+        st.session_state.quiz_student_name = ""
 
 
 def _reset_quiz(total_questions: int) -> None:
@@ -141,6 +148,7 @@ def _reset_quiz(total_questions: int) -> None:
     st.session_state.quiz_selected = None
     st.session_state.quiz_was_correct = None
     st.session_state.quiz_question = random.choice(QUIZ_BANK)
+    st.session_state.quiz_results = []
 
 
 def _next_question() -> None:
@@ -151,14 +159,28 @@ def _next_question() -> None:
     st.session_state.quiz_question = random.choice(QUIZ_BANK)
 
 
+def _quiz_results_csv() -> bytes:
+    buffer = io.StringIO()
+    writer = csv.DictWriter(
+        buffer,
+        fieldnames=["student", "timestamp", "question", "selected", "correct_answer", "correct", "explanation"],
+    )
+    writer.writeheader()
+    for row in st.session_state.quiz_results:
+        writer.writerow(row)
+    return buffer.getvalue().encode("utf-8")
+
+
 def render() -> None:
     st.subheader("Quiz Mode (Classroom Assignments)")
     st.caption("Predict the result first, then reveal your score.")
 
-    col1, col2 = st.columns([1, 2])
+    col1, col2, col3 = st.columns([1, 1, 2])
     with col1:
         total_questions = st.selectbox("Assignment length", [5, 10, 15], index=1)
     with col2:
+        st.session_state.quiz_student_name = st.text_input("Student name", value=st.session_state.quiz_student_name)
+    with col3:
         st.markdown(" ")
         if st.button("Start New Assignment", type="primary"):
             _reset_quiz(total_questions)
@@ -181,6 +203,15 @@ def render() -> None:
         st.success(f"Assignment complete! Final score: {score}/{total} ({percent:.0f}%)")
         if percent >= 90:
             st.balloons()
+
+        filename = f"quiz_results_{(st.session_state.quiz_student_name or 'student').replace(' ', '_')}.csv"
+        st.download_button(
+            "Download Results CSV",
+            data=_quiz_results_csv(),
+            file_name=filename,
+            mime="text/csv",
+            use_container_width=False,
+        )
         st.info("Click **Start New Assignment** to run another quiz.")
         return
 
@@ -210,6 +241,18 @@ def render() -> None:
             st.session_state.quiz_answered = True
             if is_correct:
                 st.session_state.quiz_score += 1
+
+            st.session_state.quiz_results.append(
+                {
+                    "student": st.session_state.quiz_student_name,
+                    "timestamp": datetime.now().isoformat(timespec="seconds"),
+                    "question": prompt,
+                    "selected": selected,
+                    "correct_answer": answer,
+                    "correct": "yes" if is_correct else "no",
+                    "explanation": q["explanation"],
+                }
+            )
             st.rerun()
     else:
         if st.session_state.quiz_was_correct:

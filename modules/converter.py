@@ -120,9 +120,10 @@ def render() -> None:
     )
     st.caption(f"Current HEX: {rgb_to_hex(rgb)}")
 
-    with st.expander("Explain conversion equations (classroom reference)"):
-        st.markdown(
-            """
+    if st.session_state.get("app_mode", "Student") == "Teacher":
+        with st.expander("Explain conversion equations (classroom reference)"):
+            st.markdown(
+                """
 ### RGB → HSV (normalized RGB in [0,1])
 Let `max = max(r,g,b)`, `min = min(r,g,b)`, `Δ = max-min`.
 - **V** = `max`
@@ -184,3 +185,5 @@ where `f(t)` is cubic-root with low-end linear segment.
             f"CIELAB (L*={lab[0]:.2f}, a*={lab[1]:.2f}, b*={lab[2]:.2f})\n"
             f"OKLab (L={okl[0]:.4f}, a={okl[1]:.4f}, b={okl[2]:.4f})"
         )
+    else:
+        st.caption("Switch sidebar Mode to **Teacher** to view equation derivations and worked math details.")

@@ -24,16 +24,28 @@ def render() -> None:
     st.subheader("HSB / HSV Decomposition Explorer")
     st.caption("Learn what Hue, Saturation, and Brightness each do to a color.")
 
-    c1, c2 = st.columns([1, 1])
+    if "hsv_h" not in st.session_state:
+        st.session_state.hsv_h = 210
+        st.session_state.hsv_s = 60
+        st.session_state.hsv_v = 75
+
+    c1, c2, c3 = st.columns([1, 1, 0.5])
     with c1:
-        h = st.slider("Hue (0-360°)", 0, 360, 210)
-        s = st.slider("Saturation (%)", 0, 100, 60)
-        v = st.slider("Brightness / Value (%)", 0, 100, 75)
+        h = st.slider("Hue (0-360°)", 0, 360, key="hsv_h")
+        s = st.slider("Saturation (%)", 0, 100, key="hsv_s")
+        v = st.slider("Brightness / Value (%)", 0, 100, key="hsv_v")
     with c2:
         lock_mode = st.radio(
             "Exploration mode",
             ["Free", "Lock S,V (change Hue)", "Lock H,V (change Saturation)", "Lock H,S (change Brightness)"],
         )
+    with c3:
+        st.markdown(" ")
+        if st.button("Reset tab", key="reset_hsv"):
+            st.session_state.hsv_h = 210
+            st.session_state.hsv_s = 60
+            st.session_state.hsv_v = 75
+            st.rerun()
 
     base_rgb = hsv_deg_to_rgb(h, s, v)
     _swatch("Current HSV Color", base_rgb, f"H={h}°, S={s}%, V={v}%")
@@ -52,10 +64,12 @@ def render() -> None:
         _swatch("Brightness effect", val_view, "S fixed at 100")
 
     st.markdown("### HSV 3D Model (moved from 3D Models tab)")
+    perf = st.session_state.get("perf_mode", "Balanced")
+    default_density = "Low" if perf == "Fast" else "High" if perf == "Detail" else "Medium"
     hsv_density = st.select_slider(
         "HSV 3D point density",
         options=["Low", "Medium", "High"],
-        value="Medium",
+        value=default_density,
         key="hsv3d_density_explorer",
     )
     if hsv_density == "Low":
