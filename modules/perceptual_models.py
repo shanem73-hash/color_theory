@@ -218,6 +218,127 @@ def _lab_plane_figure(
     return fig
 
 
+def _rgb_space_3d_figure(
+    base_rgb: tuple[int, int, int],
+    moved_rgb: tuple[int, int, int] | None,
+    step: int,
+) -> go.Figure:
+    vals = list(range(0, 256, step))
+    xs, ys, zs, cols = [], [], [], []
+
+    for r in vals:
+        for g in vals:
+            for b in vals:
+                xs.append(r)
+                ys.append(g)
+                zs.append(b)
+                cols.append(f"rgb({r},{g},{b})")
+
+    base_r, base_g, base_b = base_rgb
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter3d(
+            x=xs,
+            y=ys,
+            z=zs,
+            mode="markers",
+            marker=dict(size=3, color=cols, opacity=0.7),
+            name="RGB samples",
+            hovertemplate="R:%{x}<br>G:%{y}<br>B:%{z}<extra></extra>",
+        )
+    )
+
+    radius = None
+    if moved_rgb is not None:
+        mr, mg, mb = moved_rgb
+        radius = math.sqrt((mr - base_r) ** 2 + (mg - base_g) ** 2 + (mb - base_b) ** 2)
+
+        # Distance line (RGB Euclidean)
+        fig.add_trace(
+            go.Scatter3d(
+                x=[base_r, mr],
+                y=[base_g, mg],
+                z=[base_b, mb],
+                mode="lines",
+                line=dict(color="black", width=6),
+                name=f"RGB distance ({radius:.1f})",
+                hoverinfo="skip",
+            )
+        )
+
+        # Iso-distance sphere in RGB space
+        if radius > 0:
+            u_steps, v_steps = 28, 14
+            u_vals = [i * (2 * math.pi / (u_steps - 1)) for i in range(u_steps)]
+            v_vals = [i * (math.pi / (v_steps - 1)) for i in range(v_steps)]
+            sx, sy, sz = [], [], []
+            for v in v_vals:
+                rowx, rowy, rowz = [], [], []
+                for u in u_vals:
+                    rowx.append(base_r + radius * math.cos(u) * math.sin(v))
+                    rowy.append(base_g + radius * math.sin(u) * math.sin(v))
+                    rowz.append(base_b + radius * math.cos(v))
+                sx.append(rowx)
+                sy.append(rowy)
+                sz.append(rowz)
+            fig.add_trace(
+                go.Surface(
+                    x=sx,
+                    y=sy,
+                    z=sz,
+                    opacity=0.22,
+                    showscale=False,
+                    colorscale=[[0, "#ff8c00"], [1, "#ff8c00"]],
+                    name=f"RGB iso-distance sphere ({radius:.1f})",
+                    hoverinfo="skip",
+                )
+            )
+
+    fig.add_trace(
+        go.Scatter3d(
+            x=[base_r],
+            y=[base_g],
+            z=[base_b],
+            mode="markers+text",
+            marker=dict(size=8, color="black", symbol="diamond"),
+            text=["Base"],
+            textposition="top center",
+            name="Base color",
+        )
+    )
+
+    if moved_rgb is not None:
+        mr, mg, mb = moved_rgb
+        fig.add_trace(
+            go.Scatter3d(
+                x=[mr],
+                y=[mg],
+                z=[mb],
+                mode="markers+text",
+                marker=dict(size=7, color="white", line=dict(color="black", width=2)),
+                text=["RGB move"],
+                textposition="bottom center",
+                name="RGB move",
+            )
+        )
+
+    fig.update_layout(
+        scene=dict(
+            xaxis_title="R",
+            yaxis_title="G",
+            zaxis_title="B",
+            xaxis=dict(range=[0, 255]),
+            yaxis=dict(range=[0, 255]),
+            zaxis=dict(range=[0, 255]),
+            aspectmode="cube",
+        ),
+        title="RGB 3D view",
+        height=760,
+        margin=dict(l=0, r=0, t=40, b=10),
+    )
+    return fig
+
+
 def _perceptual_space_3d_figure(
     base_rgb: tuple[int, int, int],
     mode: str,
@@ -282,7 +403,7 @@ def _perceptual_space_3d_figure(
                 z=sz,
                 opacity=0.22,
                 showscale=False,
-                colorscale=[[0, "#666"], [1, "#666"]],
+                colorscale=[[0, "#ff8c00"], [1, "#ff8c00"]],
                 name=f"Iso-ΔE sphere ({delta_e:.1f})",
                 hoverinfo="skip",
             )
@@ -301,12 +422,27 @@ def _perceptual_space_3d_figure(
         )
     )
 
+    moved_point = None
     if moved_rgb is not None:
         if mode == "CIELAB":
             mL, mA, mB = rgb_to_lab(moved_rgb)
         else:
             mL0, mA0, mB0 = rgb_to_oklab(moved_rgb)
             mL, mA, mB = mL0 * 100, mA0 * 100, mB0 * 100
+        moved_point = (mA, mB, mL)
+
+        fig.add_trace(
+            go.Scatter3d(
+                x=[baseA, mA],
+                y=[baseB, mB],
+                z=[baseL, mL],
+                mode="lines",
+                line=dict(color="black", width=6),
+                name="Perceptual distance",
+                hoverinfo="skip",
+            )
+        )
+
         fig.add_trace(
             go.Scatter3d(
                 x=[mA],
@@ -320,11 +456,25 @@ def _perceptual_space_3d_figure(
             )
         )
 
+    span = 85.0
+    if delta_e is not None and delta_e > 0:
+        span = max(span, delta_e * 1.35)
+    if moved_point is not None:
+        span = max(
+            span,
+            abs(moved_point[0] - baseA) * 1.35,
+            abs(moved_point[1] - baseB) * 1.35,
+            abs(moved_point[2] - baseL) * 1.35,
+        )
+
     fig.update_layout(
         scene=dict(
             xaxis_title="a axis",
             yaxis_title="b axis",
             zaxis_title="L axis",
+            xaxis=dict(range=[baseA - span, baseA + span]),
+            yaxis=dict(range=[baseB - span, baseB + span]),
+            zaxis=dict(range=[baseL - span, baseL + span]),
             aspectmode="cube",
         ),
         title=f"{mode} 3D view",
@@ -471,10 +621,13 @@ OKLab is newer and often smoother for gradients/UI manipulation.
         config={"scrollZoom": False},
     )
 
-    st.markdown("### 3D explanation: perceptual spaces")
+    st.markdown("### 3D explanation: RGB vs perceptual spaces (side-by-side)")
+    st.caption(
+        "Left: RGB geometry using Euclidean RGB distance. Right: selected perceptual geometry using ΔE-like distance."
+    )
     d1, d2 = st.columns([1, 1])
     with d1:
-        space_mode = st.radio("3D model", ["CIELAB", "OKLab"], horizontal=True)
+        space_mode = st.radio("Perceptual 3D model", ["CIELAB", "OKLab"], horizontal=True)
     with d2:
         density = st.select_slider("3D point density", options=["Low", "Medium", "High"], value="Medium")
 
@@ -485,10 +638,23 @@ OKLab is newer and often smoother for gradients/UI manipulation.
     else:
         step = 48
 
-    st.plotly_chart(
-        _perceptual_space_3d_figure(base_rgb, space_mode, step, moved_rgb=rgb_demo, delta_e=target_de),
-        use_container_width=True,
-        config={"scrollZoom": False},
+    pleft, pright = st.columns(2)
+    with pleft:
+        st.plotly_chart(
+            _rgb_space_3d_figure(base_rgb, rgb_demo, step),
+            use_container_width=True,
+            config={"scrollZoom": False},
+        )
+    with pright:
+        st.plotly_chart(
+            _perceptual_space_3d_figure(base_rgb, space_mode, step, moved_rgb=rgb_demo, delta_e=target_de),
+            use_container_width=True,
+            config={"scrollZoom": False},
+        )
+
+    st.info(
+        "Yes, different axis scales between CIELAB and OKLab are normal because they are different coordinate systems. "
+        "To make the iso-distance shell look like a true sphere, this view forces equal axis span around the base point."
     )
 
     with st.expander("Why CIELAB / OKLab matter"):

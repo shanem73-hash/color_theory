@@ -60,7 +60,8 @@ Includes an **equation explainer** with RGB↔HSV, RGB↔HSL, and RGB↔CMYK ref
 - **2D Lab a*b* slice visualization** (fixed lightness)
 - **3D CIELAB/OKLab space visualization** with selectable model and density
 - Demo card: **RGB move in R/G/B channels** with computed ΔE
-- **Iso-ΔE circle (2D)** and **iso-ΔE sphere (3D)** visual overlays
+- **Iso-ΔE circle (2D)** and **iso-ΔE sphere (3D, transparent orange)** visual overlays
+- Side-by-side **RGB 3D vs CIELAB/OKLab 3D** distance comparison
 
 ## Tech stack
 
