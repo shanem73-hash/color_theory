@@ -175,11 +175,15 @@ def render() -> None:
     st.subheader("Quiz Mode (Classroom Assignments)")
     st.caption("Predict the result first, then reveal your score.")
 
+    _init_state(10)
+
     col1, col2, col3 = st.columns([1, 1, 2])
     with col1:
         total_questions = st.selectbox("Assignment length", [5, 10, 15], index=1)
     with col2:
-        st.session_state.quiz_student_name = st.text_input("Student name", value=st.session_state.quiz_student_name)
+        st.session_state.quiz_student_name = st.text_input(
+            "Student name", value=st.session_state.get("quiz_student_name", "")
+        )
     with col3:
         st.markdown(" ")
         if st.button("Start New Assignment", type="primary"):
