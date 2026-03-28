@@ -137,7 +137,12 @@ def _swatch(label: str, rgb: tuple[int, int, int]) -> None:
     )
 
 
-def _lab_plane_figure(l_fixed: float, base_lab: tuple[float, float, float]) -> go.Figure:
+def _lab_plane_figure(
+    l_fixed: float,
+    base_lab: tuple[float, float, float],
+    moved_lab: tuple[float, float, float] | None = None,
+    delta_e: float | None = None,
+) -> go.Figure:
     a_vals = list(range(-80, 81, 8))
     b_vals = list(range(-80, 81, 8))
     x, y, cols = [], [], []
@@ -160,10 +165,12 @@ def _lab_plane_figure(l_fixed: float, base_lab: tuple[float, float, float]) -> g
             name="Lab a*b* slice",
         )
     )
+
+    base_a, base_b = base_lab[1], base_lab[2]
     fig.add_trace(
         go.Scatter(
-            x=[base_lab[1]],
-            y=[base_lab[2]],
+            x=[base_a],
+            y=[base_b],
             mode="markers+text",
             marker=dict(size=12, color="black", symbol="diamond"),
             text=["Base"],
@@ -171,6 +178,35 @@ def _lab_plane_figure(l_fixed: float, base_lab: tuple[float, float, float]) -> g
             name="Base color",
         )
     )
+
+    if moved_lab is not None:
+        fig.add_trace(
+            go.Scatter(
+                x=[moved_lab[1]],
+                y=[moved_lab[2]],
+                mode="markers+text",
+                marker=dict(size=11, color="white", line=dict(color="black", width=2)),
+                text=["RGB move"],
+                textposition="bottom center",
+                name="RGB move",
+            )
+        )
+
+    if delta_e is not None and delta_e > 0:
+        theta = [i * (2 * math.pi / 180) for i in range(181)]
+        cx = [base_a + delta_e * math.cos(t) for t in theta]
+        cy = [base_b + delta_e * math.sin(t) for t in theta]
+        fig.add_trace(
+            go.Scatter(
+                x=cx,
+                y=cy,
+                mode="lines",
+                line=dict(color="black", width=2, dash="dash"),
+                name=f"Iso-ΔE circle (r={delta_e:.1f})",
+                hoverinfo="skip",
+            )
+        )
+
     fig.update_layout(
         title=f"CIELAB a*b* plane at L*={l_fixed:.1f}",
         xaxis_title="a* (green ↔ red)",
@@ -182,7 +218,13 @@ def _lab_plane_figure(l_fixed: float, base_lab: tuple[float, float, float]) -> g
     return fig
 
 
-def _perceptual_space_3d_figure(base_rgb: tuple[int, int, int], mode: str, step: int) -> go.Figure:
+def _perceptual_space_3d_figure(
+    base_rgb: tuple[int, int, int],
+    mode: str,
+    step: int,
+    moved_rgb: tuple[int, int, int] | None = None,
+    delta_e: float | None = None,
+) -> go.Figure:
     vals = list(range(0, 256, step))
     xs, ys, zs, cols = [], [], [], []
 
@@ -218,6 +260,34 @@ def _perceptual_space_3d_figure(base_rgb: tuple[int, int, int], mode: str, step:
             hovertemplate="a: %{x:.1f}<br>b: %{y:.1f}<br>L: %{z:.1f}<extra></extra>",
         )
     )
+
+    if delta_e is not None and delta_e > 0:
+        u_steps, v_steps = 28, 14
+        u_vals = [i * (2 * math.pi / (u_steps - 1)) for i in range(u_steps)]
+        v_vals = [i * (math.pi / (v_steps - 1)) for i in range(v_steps)]
+        sx, sy, sz = [], [], []
+        for v in v_vals:
+            rowx, rowy, rowz = [], [], []
+            for u in u_vals:
+                rowx.append(baseA + delta_e * math.cos(u) * math.sin(v))
+                rowy.append(baseB + delta_e * math.sin(u) * math.sin(v))
+                rowz.append(baseL + delta_e * math.cos(v))
+            sx.append(rowx)
+            sy.append(rowy)
+            sz.append(rowz)
+        fig.add_trace(
+            go.Surface(
+                x=sx,
+                y=sy,
+                z=sz,
+                opacity=0.22,
+                showscale=False,
+                colorscale=[[0, "#666"], [1, "#666"]],
+                name=f"Iso-ΔE sphere ({delta_e:.1f})",
+                hoverinfo="skip",
+            )
+        )
+
     fig.add_trace(
         go.Scatter3d(
             x=[baseA],
@@ -230,6 +300,25 @@ def _perceptual_space_3d_figure(base_rgb: tuple[int, int, int], mode: str, step:
             name="Base color",
         )
     )
+
+    if moved_rgb is not None:
+        if mode == "CIELAB":
+            mL, mA, mB = rgb_to_lab(moved_rgb)
+        else:
+            mL0, mA0, mB0 = rgb_to_oklab(moved_rgb)
+            mL, mA, mB = mL0 * 100, mA0 * 100, mB0 * 100
+        fig.add_trace(
+            go.Scatter3d(
+                x=[mA],
+                y=[mB],
+                z=[mL],
+                mode="markers+text",
+                marker=dict(size=7, color="white", line=dict(color="black", width=2)),
+                text=["RGB move"],
+                textposition="bottom center",
+                name="RGB move",
+            )
+        )
 
     fig.update_layout(
         scene=dict(
@@ -316,14 +405,22 @@ OKLab is newer and often smoother for gradients/UI manipulation.
     st.write(f"Approx ΔE*ab (Lab Euclidean): **{de_lab:.2f}**")
     st.write(f"Scaled OKLab distance (for classroom intuition): **{de_ok:.2f}**")
 
-    st.markdown("### Demo: equal numeric RGB move vs perceptual move")
-    st.caption("Same numeric RGB change does not guarantee same visual change. Compare with a matched perceptual-space move.")
+    st.markdown("### Demo: RGB move in all channels vs perceptual distance")
+    st.caption("Move R/G/B together, compute ΔE, then visualize iso-ΔE circle (2D) and sphere (3D).")
 
-    dcol1, dcol2, dcol3 = st.columns(3)
-    with dcol1:
-        rgb_step = st.slider("RGB demo step (+R)", 5, 80, 30, 1)
+    m1, m2, m3 = st.columns(3)
+    with m1:
+        d_r = st.slider("ΔR", -80, 80, 30, 1)
+    with m2:
+        d_g = st.slider("ΔG", -80, 80, 0, 1)
+    with m3:
+        d_b = st.slider("ΔB", -80, 80, 0, 1)
 
-    rgb_demo = (min(255, base_rgb[0] + rgb_step), base_rgb[1], base_rgb[2])
+    rgb_demo = (
+        max(0, min(255, base_rgb[0] + d_r)),
+        max(0, min(255, base_rgb[1] + d_g)),
+        max(0, min(255, base_rgb[2] + d_b)),
+    )
     base_lab = rgb_to_lab(base_rgb)
     rgb_demo_lab = rgb_to_lab(rgb_demo)
     rgb_demo_de = _delta_e76(base_lab, rgb_demo_lab)
@@ -331,7 +428,8 @@ OKLab is newer and often smoother for gradients/UI manipulation.
     if "target_de_lab_demo" not in st.session_state:
         st.session_state.target_de_lab_demo = 12.0
 
-    with dcol2:
+    t1, t2 = st.columns([2, 1])
+    with t1:
         target_de = st.slider(
             "Target perceptual ΔE (Lab)",
             3.0,
@@ -340,13 +438,13 @@ OKLab is newer and often smoother for gradients/UI manipulation.
             0.5,
             key="target_de_lab_demo",
         )
-    with dcol3:
+    with t2:
         st.markdown(" ")
-        if st.button("Match RGB move ΔE automatically"):
+        if st.button("Use current RGB move ΔE"):
             st.session_state.target_de_lab_demo = round(rgb_demo_de * 2) / 2
             st.rerun()
 
-    # Match perceptual move in Lab by shifting along +a* direction
+    # one matched perceptual move example: shift along +a* only
     lab_match = (base_lab[0], base_lab[1] + target_de, base_lab[2])
     lab_demo_rgb = lab_to_rgb(lab_match)
     lab_demo_de = _delta_e76(base_lab, rgb_to_lab(lab_demo_rgb))
@@ -355,16 +453,23 @@ OKLab is newer and often smoother for gradients/UI manipulation.
     with s1:
         _swatch("Base", base_rgb)
     with s2:
-        _swatch(f"RGB move (+R {rgb_step})", rgb_demo)
+        _swatch(f"RGB move ({d_r:+d},{d_g:+d},{d_b:+d})", rgb_demo)
         st.caption(f"Observed Lab ΔE*ab ≈ **{rgb_demo_de:.2f}**")
     with s3:
-        _swatch("Perceptual move (Lab target)", lab_demo_rgb)
+        _swatch("One perceptual move example", lab_demo_rgb)
         st.caption(f"Observed Lab ΔE*ab ≈ **{lab_demo_de:.2f}** (target {target_de:.1f})")
 
-    st.markdown("### 2D explanation: Lab a*b* plane")
-    st.caption("This slice fixes lightness (L*). Moving left/right changes green↔red; moving up/down changes blue↔yellow.")
+    st.markdown("### 2D explanation: Lab a*b* plane + iso-ΔE circle")
+    st.caption(
+        "This slice fixes lightness (L*). Dashed circle is all points at the same ΔE radius in this 2D slice. "
+        "(True 3D ΔE is a sphere.)"
+    )
     l_fixed = st.slider("2D plane lightness L*", 10.0, 95.0, float(lab[0]), 1.0)
-    st.plotly_chart(_lab_plane_figure(l_fixed, lab), use_container_width=True, config={"scrollZoom": False})
+    st.plotly_chart(
+        _lab_plane_figure(l_fixed, base_lab, moved_lab=rgb_demo_lab, delta_e=target_de),
+        use_container_width=True,
+        config={"scrollZoom": False},
+    )
 
     st.markdown("### 3D explanation: perceptual spaces")
     d1, d2 = st.columns([1, 1])
@@ -381,7 +486,7 @@ OKLab is newer and often smoother for gradients/UI manipulation.
         step = 48
 
     st.plotly_chart(
-        _perceptual_space_3d_figure(base_rgb, space_mode, step),
+        _perceptual_space_3d_figure(base_rgb, space_mode, step, moved_rgb=rgb_demo, delta_e=target_de),
         use_container_width=True,
         config={"scrollZoom": False},
     )
